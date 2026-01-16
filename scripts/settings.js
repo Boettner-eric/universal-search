@@ -33,6 +33,14 @@ let settings = {
   },
 };
 
+let hotkeyConfig = {
+  key: "K",
+  ctrl: false,
+  alt: false,
+  shift: false,
+  meta: true,
+};
+
 function merge_settings(settings, storage) {
   Object.entries(storage).forEach(([key, enabled]) => {
     if (key in settings) {
@@ -41,4 +49,11 @@ function merge_settings(settings, storage) {
   });
 
   return settings;
+}
+
+function merge_hotkey_config(config, storage) {
+  if (storage) {
+    return { ...config, ...storage };
+  }
+  return config;
 }

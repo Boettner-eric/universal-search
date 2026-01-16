@@ -8,6 +8,14 @@
 </head>
 <body>
   <form id="optionsForm"></form>
+  <div class="hotkey-container">
+    <h3 class="hotkey-section-title">Custom Hotkey</h3>
+    <div class="hotkey-input-wrapper">
+      <p class="hotkey-instruction">Press any key combination:</p>
+      <input type="text" id="hotkey-display" class="hotkey-input" readonly placeholder="Press a key combination..." />
+      <div id="hotkey-error" class="hotkey-error" style="display: none;"></div>
+    </div>
+  </div>
   <script src="scripts/settings.js"></script>
   <script defer src="scripts/options.js"></script>
 </body>
