@@ -1,4 +1,3 @@
-//
 let options = {};
 let hotkey = {};
 const optionsForm = document.getElementById("optionsForm");

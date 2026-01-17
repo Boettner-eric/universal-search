@@ -1,5 +1,3 @@
-// queries can be a icon/button or the input field itself
-//
 let settings = {
   amazon: {
     url: "www.amazon.com",
