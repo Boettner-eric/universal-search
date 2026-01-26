@@ -24,6 +24,11 @@ let settings = {
     queries: ['input[aria-label*="search" i]', 'input[name*="search_query" i]'],
     enabled: true,
   },
+  hbo: {
+    url: "play.hbomax.com",
+    queries: ['a[aria-label*="Search" i]'],
+    enabled: true,
+  },
   netflix: {
     url: "www.netflix.com",
     queries: ['button[aria-label*="Search" i]', 'input[id*="searchInput" i]'],
