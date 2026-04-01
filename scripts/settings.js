@@ -39,6 +39,11 @@ let settings = {
     queries: ['a[aria-label*="search" i]'],
     enabled: true,
   },
+  paramountplus: {
+    url: "www.paramountplus.com",
+    queries: ['a[aria-label*="Search" i]'],
+    enabled: true,
+  },
 };
 
 let hotkeyConfig = {
