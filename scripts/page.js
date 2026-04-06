@@ -16,10 +16,79 @@ chrome.storage.onChanged.addListener((changes, area) => {
   }
 });
 
+// iframe
+if (window !== window.top) {
+  function getIframeActions() {
+    const setting = Object.values(settings).find(byHostname);
+    return setting?.actions?.filter((a) => a.iframe && a.enabled) || [];
+  }
+
+  const observer = new MutationObserver(() => {
+    for (const action of getIframeActions().filter((a) => a.auto)) {
+      const el = document.querySelector(action.query);
+      if (el) {
+        el.click();
+        observer.disconnect();
+        return;
+      }
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+  setTimeout(() => observer.disconnect(), 10000);
+
+  function handleActionKey(key) {
+    for (const action of getIframeActions().filter((a) => a.key)) {
+      if (key === action.key) {
+        const el = document.querySelector(action.query);
+        if (el) el.click();
+      }
+    }
+  }
+
+  window.addEventListener("message", (evt) => {
+    if (evt.data?.type === "universal-search-action") {
+      handleActionKey(evt.data.key);
+    }
+  });
+}
+
 document.onkeydown = async function keydown(evt) {
+  const setting = Object.values(settings).find(byHostname);
+
+  // don't capture keys when typing in input fields
+  const tag = document.activeElement?.tagName;
+  const inInput =
+    tag === "INPUT" ||
+    tag === "TEXTAREA" ||
+    document.activeElement?.isContentEditable;
+  if (inInput) return;
+
+  // Site-specific action shortcuts (main page only)
+  if (window === window.top) {
+    const actions = setting?.actions?.filter((a) => a.enabled && a.key) || [];
+    for (const action of actions) {
+      if (evt.key === action.key) {
+        if (action.iframe) {
+          const frame = document.querySelector(action.iframe);
+          if (frame?.contentWindow) {
+            frame.contentWindow.postMessage(
+              { type: "universal-search-action", key: action.key },
+              "*",
+            );
+          }
+        } else {
+          const el = document.querySelector(action.query);
+          if (el) {
+            el.click();
+            return;
+          }
+        }
+      }
+    }
+  }
+
   if (matchesHotkey(evt)) {
     evt.preventDefault();
-    const setting = Object.values(settings).find(byHostname);
     if (setting && setting.enabled) {
       const element = document.querySelector(setting.queries.join(", "));
       if (!element) return;

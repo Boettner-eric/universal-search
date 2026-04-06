@@ -19,10 +19,26 @@ let settings = {
     queries: ['input[aria-label*="search" i]', 'input[name*="search_query" i]'],
     enabled: true,
   },
-  gmail: {
+  youtube: {
     url: "www.youtube.com",
     queries: ['input[aria-label*="search" i]', 'input[name*="search_query" i]'],
     enabled: true,
+    actions: [
+      {
+        key: "x",
+        query: "#close-button button",
+        label: "Hide Chat (x)",
+        enabled: true,
+        iframe: "#chatframe",
+        auto: false,
+      },
+      {
+        key: "g",
+        query: '[aria-label="Skip ahead to live broadcast."]',
+        label: "Skip to Live (g)",
+        enabled: true,
+      },
+    ],
   },
   hbo: {
     url: "play.hbomax.com",
@@ -55,9 +71,20 @@ let hotkeyConfig = {
 };
 
 function merge_settings(settings, storage) {
-  Object.entries(storage).forEach(([key, enabled]) => {
+  Object.entries(storage).forEach(([key, value]) => {
     if (key in settings) {
-      settings[key].enabled = Boolean(enabled);
+      if (typeof value === "object" && value.actions) {
+        settings[key].enabled = Boolean(value.enabled);
+        value.actions.forEach((stored, i) => {
+          if (settings[key].actions?.[i]) {
+            settings[key].actions[i].enabled = Boolean(stored.enabled);
+            if ("auto" in stored)
+              settings[key].actions[i].auto = Boolean(stored.auto);
+          }
+        });
+      } else {
+        settings[key].enabled = Boolean(value);
+      }
     }
   });
 

@@ -3,7 +3,7 @@ let hotkey = {};
 const optionsForm = document.getElementById("optionsForm");
 const EXCLUDED_KEYS = ["Meta", "Alt", "Esc", "Control"];
 
-function createCheckboxField(name, config) {
+function createCheckboxField(name, config, onChange) {
   const container = document.createElement("div");
   container.className = "toggle-item";
 
@@ -20,8 +20,12 @@ function createCheckboxField(name, config) {
   checkbox.checked = Boolean(config.enabled);
 
   checkbox.addEventListener("change", async (event) => {
-    options[name] = event.target.checked;
-    await chrome.storage.sync.set({ options });
+    if (onChange) {
+      await onChange(event.target.checked);
+    } else {
+      options[name] = event.target.checked;
+      await chrome.storage.sync.set({ options });
+    }
   });
 
   const toggleSwitch = document.createElement("span");
@@ -88,6 +92,39 @@ async function generateForm() {
   Object.entries(newSettings).forEach(([key, config]) => {
     const field = createCheckboxField(key, config);
     optionsForm.appendChild(field);
+
+    if (config.actions) {
+      const storeActions = async () => {
+        options[key] = { enabled: config.enabled, actions: config.actions.map((a) => {
+          const stored = { enabled: a.enabled };
+          if ("auto" in a) stored.auto = a.auto;
+          return stored;
+        })};
+        await chrome.storage.sync.set({ options });
+      };
+
+      config.actions.forEach((action, i) => {
+        const actionField = createCheckboxField(`${key}_action_${i}`, {
+          label: `  ↳ ${action.label}`,
+          enabled: action.enabled,
+        }, async (checked) => {
+          config.actions[i].enabled = checked;
+          await storeActions();
+        });
+        optionsForm.appendChild(actionField);
+
+        if ("auto" in action) {
+          const autoField = createCheckboxField(`${key}_action_${i}_auto`, {
+            label: `      ↳ Auto`,
+            enabled: action.auto,
+          }, async (checked) => {
+            config.actions[i].auto = checked;
+            await storeActions();
+          });
+          optionsForm.appendChild(autoField);
+        }
+      });
+    }
   });
 
   const hotkeyData = merge_hotkey_config(hotkeyConfig, data.hotkey);
